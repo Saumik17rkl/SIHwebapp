@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat App</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            height: 100vh;
+            background: linear-gradient(to bottom right, #ff0000, #0000ff);
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+        }
+        .header {
+            background: linear-gradient(to right, #7603e9bb, #0000ff);
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-bottom: 1px solid #ddd;
+        }
+        .header img {
+            height: 50px;
+            width: 50px;
+            margin-right: 15px;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+        .header p {
+            margin: 0;
+            font-size: 16px;
+        }
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            max-width: 600px;
+            margin: 20px auto;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            border-bottom: 1px solid #ddd;
+            background: #fafafa;
+            border-radius: 8px 8px 0 0;
+        }
+        .input-area {
+            display: flex;
+            padding: 10px;
+            background: #f9f9f9;
+            border-top: 1px solid #ddd;
+            border-radius: 0 0 8px 8px;
+            align-items: center;
+        }
+        .input-area input {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        .input-area button {
+            padding: 12px 20px;
+            border: none;
+            background: #007bff;
+            color: #fff;
+            border-radius: 4px;
+            margin-left: 10px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .input-area button:hover {
+            background: #0056b3;
+        }
+        .input-area .control-button {
+            border: none;
+            background: transparent;
+            color: #007bff;
+            font-size: 20px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        .input-area .control-button:hover {
+            color: #0056b3;
+        }
+        .message {
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: #fff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .message.user {
+            text-align: right;
+            background: #d1e7dd;
+        }
+        .message.bot {
+            text-align: left;
+            background: #e2e3e5;
+        }
+        .message.user::before {
+            content: "You: ";
+            font-weight: bold;
+            color: #333;
+        }
+        .message.bot::before {
+            content: "Bot: ";
+            font-weight: bold;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <img src="WhatsApp Image 2024-09-17 at 12.27.50_d39e4ebb.jpg" alt="ISL Nexus Logo">
+        <div>
+            <h1>ISL Nexus</h1>
+            <p>Empowering Communication Through Sign Language</p>
+        </div>
+    </div>
+    <div class="chat-container">
+        <div id="messages" class="messages"></div>
+        <div class="input-area">
+            <input id="userInput" type="text" placeholder="Type your message here..." />
+            <button onclick="sendMessage()">Send</button>
+            <button class="control-button" id="audioControl">🔊</button> <!-- Audio Control -->
+            <button class="control-button" id="videoControl">📹</button> <!-- Video Control -->
+        </div>
+    </div>
+    <script>
+        let isAudioOn = false;
+        let isVideoOn = false;
+
+        async function sendMessage() {
+            const input = document.getElementById('userInput');
+            const messageText = input.value;
+
+            if (!messageText.trim()) return;
+
+            // Add user message to chat
+            const messagesDiv = document.getElementById('messages');
+            const userMessageDiv = document.createElement('div');
+            userMessageDiv.className = 'message user';
+            userMessageDiv.textContent = messageText;
+            messagesDiv.appendChild(userMessageDiv);
+            input.value = '';
+
+            // Send message to server
+            const response = await fetch('/api/chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ text: messageText }),
+            });
+
+            const data = await response.json();
+
+            // Add bot response to chat
+            const botMessageDiv = document.createElement('div');
+            botMessageDiv.className = 'message bot';
+            botMessageDiv.textContent = data.response;
+            messagesDiv.appendChild(botMessageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function toggleAudio() {
+            isAudioOn = !isAudioOn;
+            document.getElementById('audioControl').textContent = isAudioOn ? '🔈' : '🔊';
+            // Add your audio handling logic here
+        }
+
+        function toggleVideo() {
+            isVideoOn = !isVideoOn;
+            document.getElementById('videoControl').textContent = isVideoOn ? '🔲' : '📹';
+            // Add your video handling logic here
+        }
+
+        document.getElementById('userInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        document.getElementById('audioControl').addEventListener('click', toggleAudio);
+        document.getElementById('videoControl').addEventListener('click', toggleVideo);
+    </script>
+</body>
+</html>
