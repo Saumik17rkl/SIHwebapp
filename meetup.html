@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat with ISL Translation</title>
+    <style>
+        @keyframes gradientTransition {
+            0% { background: linear-gradient(45deg, #FF6F61, #D3A4A6, #003366, #006699, #FF0000, #FF6F6F, #FFEB3B, #FF5722); }
+            100% { background: linear-gradient(45deg, #FF6F61, #D3A4A6, #003366, #006699, #FF0000, #FF6F6F, #FFEB3B, #FF5722); }
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-size: 200% 200%;
+            animation: gradientTransition 10s ease infinite;
+        }
+
+        .container {
+            width: 80%;
+            max-width: 1200px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.2);
+            border-bottom: 1px solid #ffffff;
+            text-align: center;
+            font-size: 24px;
+        }
+
+        .chat-box {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            border-bottom: 1px solid #ffffff;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .message p {
+            margin: 0;
+            padding: 10px;
+            border-radius: 15px;
+            max-width: 70%;
+        }
+
+        .message.user {
+            justify-content: flex-start;
+        }
+
+        .message.user p {
+            background: #00796b;
+            color: #ffffff;
+            border-radius: 15px 15px 0 15px;
+        }
+
+        .message.isl {
+            justify-content: flex-end;
+        }
+
+        .message.isl p {
+            background: #e1ffc7;
+            color: #000000;
+            border-radius: 15px 15px 15px 0;
+        }
+
+        .input-area {
+            padding: 10px;
+            border-top: 1px solid #ffffff;
+            display: flex;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .input-area input[type="text"] {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 20px;
+            background-color: #ffffff;
+            color: #000000;
+            font-size: 16px;
+            pointer-events: none;
+            opacity: 0.5;
+        }
+
+        .input-area button {
+            padding: 10px 15px;
+            margin-left: 10px;
+            border: none;
+            background: #00796b;
+            color: #ffffff;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .input-area button:hover {
+            background: #004d40;
+        }
+
+        .video-container {
+            display: none;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            border: 5px solid #ffffff;
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.6);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        video {
+            width: 100%;
+            border-radius: 10px;
+            background: #000;
+        }
+
+        .theme-selector {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .theme-selector label {
+            display: block;
+            margin-bottom: 5px;
+            color: #000000;
+            font-size: 16px;
+        }
+
+        .theme-selector select {
+            font-size: 16px;
+            padding: 5px;
+        }
+
+        .notification {
+            position: fixed;
+            top: 50px;
+            right: 10px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            color: #000;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .icon {
+            font-size: 24px;
+            cursor: pointer;
+            margin-left: 10px;
+            color: #ffffff;
+        }
+
+        .language-selector {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 5px;
+            border-radius: 5px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .language-selector span {
+            cursor: pointer;
+            font-size: 20px;
+            margin: 0 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="language-selector">
+        <span id="langToggle" onclick="toggleLanguage()">🌐</span>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            ISL and Text Chat
+        </div>
+        <div class="chat-box" id="chatBox">
+            <!-- Chat messages will be displayed here -->
+        </div>
+        <div class="input-area">
+            <span class="icon" id="audioToggle" onclick="toggleAudio()">🔊</span>
+            <span class="icon" id="videoToggle" onclick="toggleVideo()">🎥</span>
+            <input type="text" id="messageInput" placeholder="Select a suitable background color for the communication...">
+            <button onclick="sendMessage()">Send</button>
+        </div>
+        <div class="video-container" id="videoContainer">
+            <video id="islVideo" controls>
+                <source id="videoSource" src="" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const body = document.body;
+            const colorArray = [
+                '#FF6F61', '#D3A4A6', '#003366', '#006699',
+                '#FF0000', '#FF6F6F', '#FFEB3B', '#FF5722',
+                '#E91E63', '#F48FB1', '#FF7E5F', '#FEB47B',
+                '#00BFFF', '#FF4500', '#FFD700'
+            ];
+            let colorIndex = 0;
+
+            function changeBackground() {
+                setInterval(() => {
+                    colorIndex = (colorIndex + 1) % colorArray.length;
+                    const nextColor = colorArray[colorIndex];
+                    const nextColor2 = colorArray[(colorIndex + 1) % colorArray.length];
+                    body.style.background = `linear-gradient(45deg, ${nextColor}, ${nextColor2})`;
+                    body.style.backgroundSize = '400% 400%';
+                }, 1000); // Change color every second
+            }
+
+            // Initialize the gradient color change
+            changeBackground();
+        });
+
+        // JavaScript for handling audio, video, and chat functionality
+        let audioActive = false;
+        let videoActive = false;
+        let mediaRecorder;
+        let audioStream;
+        let recognition;
+        let currentLanguage = 'en-US'; // Default language
+
+        const messageInput = document.getElementById('messageInput');
+        const videoElement = document.getElementById('islVideo');
+        const videoSource = document.getElementById('videoSource');
+        const videoContainer = document.getElementById('videoContainer');
+
+        // Initialize speech recognition
+        function initializeSpeechRecognition() {
+            if (!('webkitSpeechRecognition' in window)) {
+                console.error('Speech Recognition API not supported.');
+                return;
+            }
+            recognition = new webkitSpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            recognition.lang = currentLanguage;
+
+            recognition.onresult = function(event) {
+                const transcript = event.results[0][0].transcript;
+                messageInput.value = transcript;
+            };
+
+            recognition.onerror = function(event) {
+                console.error('Speech Recognition error:', event.error);
+            };
+        }
+
+        function toggleAudio() {
+            audioActive = !audioActive;
+            const icon = document.getElementById('audioToggle');
+            if (audioActive) {
+                icon.textContent = '🔊';
+                if (!recognition) initializeSpeechRecognition();
+                recognition.start();
+            } else {
+                icon.textContent = '🔈';
+                if (recognition) recognition.stop();
+            }
+        }
+
+        function toggleVideo() {
+            videoActive = !videoActive;
+            const icon = document.getElementById('videoToggle');
+            if (videoActive) {
+                icon.textContent = '📹';
+                videoContainer.style.display = 'flex';
+            } else {
+                icon.textContent = '🎥';
+                videoContainer.style.display = 'none';
+            }
+        }
+
+        function sendMessage() {
+            const message = messageInput.value;
+            if (message) {
+                const chatBox = document.getElementById('chatBox');
+                chatBox.innerHTML += `<div class="message user"><p>${message}</p></div>`;
+                messageInput.value = '';
+
+                // Simulate response from ISL
+                setTimeout(() => {
+                    const response = 'ISL response for: ' + message; // Replace with actual ISL response
+                    chatBox.innerHTML += `<div class="message isl"><p>${response}</p></div>`;
+                    chatBox.scrollTop = chatBox.scrollHeight;
+                }, 1000);
+            }
+        }
+
+        function toggleLanguage() {
+            currentLanguage = currentLanguage === 'en-US' ? 'hi-IN' : 'en-US';
+            const langToggle = document.getElementById('langToggle');
+            langToggle.textContent = currentLanguage === 'en-US' ? '🌐' : '🇮🇳';
+            if (recognition) recognition.lang = currentLanguage;
+        }
+
+        // Initialize the app
+        initializeSpeechRecognition();
+    </script>
+</body>
+</html>
